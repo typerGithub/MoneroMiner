@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0a0a12">
+  <meta name="description" content="Monero Web Miner">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Monero Miner">
+  <title>Monero Miner</title>
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-shadow: rgba(0, 0, 0, 0.3);
+      --accent: #ff6b35;
+      --accent-glow: rgba(255, 107, 53, 0.4);
+      --text: #fff;
+      --text-dim: rgba(255, 255, 255, 0.6);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 50%, #0f0f1a 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: -1;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 300px;
+      height: 300px;
+      background: var(--accent);
+      top: -100px;
+      left: -100px;
+      opacity: 0.3;
+    }
+
+    .orb-2 {
+      width: 250px;
+      height: 250px;
+      background: #7b2ff7;
+      bottom: -50px;
+      right: -50px;
+      opacity: 0.25;
+      animation-delay: -10s;
+    }
+
+    .orb-3 {
+      width: 200px;
+      height: 200px;
+      background: #00d4ff;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.15;
+      animation-delay: -5s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(30px, -30px) scale(1.1); }
+      50% { transform: translate(-20px, 20px) scale(0.95); }
+      75% { transform: translate(20px, 10px) scale(1.05); }
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px 16px 100px;
+    }
+
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .header {
+      text-align: center;
+      padding: 24px 20px;
+      margin-bottom: 16px;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent) 0%, #ff9a6c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #444;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 0 0 rgba(0,255,0,0);
+    }
+
+    .status-dot.connected {
+      background: #00ff88;
+      box-shadow: 0 0 12px 2px rgba(0, 255, 136, 0.5);
+    }
+
+    .status-dot.mining {
+      background: var(--accent);
+      box-shadow: 0 0 12px 2px var(--accent-glow);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+    }
+
+    .wallet-display {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 12px;
+      word-break: break-all;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    .section {
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-input::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .slider-container {
+      padding: 4px 0;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .slider-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .slider {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, #ff9a6c 100%);
+      cursor: pointer;
+      box-shadow: 0 2px 10px var(--accent-glow);
+      transition: transform 0.2s ease;
+    }
+
+    .slider::-webkit-slider-thumb:active {
+      transform: scale(1.15);
+    }
+
+    .btn-mining {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, var(--accent) 0%, #ff9a6c 100%);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    .btn-start:active {
+      transform: translateY(0);
+    }
+
+    .btn-stop {
+      background: rgba(255, 60, 60, 0.2);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 60, 60, 0.3);
+      display: none;
+    }
+
+    .btn-stop:hover {
+      background: rgba(255, 60, 60, 0.3);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      padding: 16px;
+      text-align: center;
+      background: rgba(0,0,0,0.2);
+      border-radius: 16px;
+      transition: transform 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: scale(1.02);
+    }
+
+    .stat-card.full-width {
+      grid-column: span 2;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .stat-value.small {
+      font-size: 20px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+    }
+
+    .algorithm-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(255, 107, 53, 0.15);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    @media (max-width: 380px) {
+      .input-row {
+        grid-template-columns: 1fr;
+      }
+      .logo {
+        font-size: 24px;
+      }
+      .stat-value {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <script src="Miner.js"></script>
+
+  <div class="container">
+    <div class="glass header">
+      <div class="logo">Monero Miner</div>
+      <div class="connection-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Ready to mine</span>
+      </div>
+      <div class="wallet-display" id="walletDisplay"></div>
+    </div>
+
+    <div class="glass section">
+      <div class="section-title">Configuration</div>
+      <div class="form-group">
+        <label class="form-label">Pool URL</label>
+        <input type="text" class="form-input" id="poolInput" value="gulf.moneroocean.stream:10128" placeholder="pool:port">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Wallet Address</label>
+        <input type="text" class="form-input" id="walletInput" value="463hjpRmnpHNNUjwitD7LQYW6AT3JXwDdJwAB6DERonLfpSNVm8uqqMe4yCQrKKF629FoD9sQ3rH9gkDTfLoxSNBAEBbfWy" placeholder="Your wallet address">
+      </div>
+      <div class="input-row">
+        <div class="form-group">
+          <label class="form-label">Worker ID</label>
+          <input type="text" class="form-input" id="workerInput" placeholder="optional">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Threads</label>
+          <input type="number" class="form-input" id="threadsInput" value="-1" min="-1" max="32">
+        </div>
+      </div>
+      <div class="form-group slider-container">
+        <div class="slider-header">
+          <label class="form-label" style="margin-bottom:0">CPU Throttle</label>
+          <span class="slider-value" id="throttleValue">20%</span>
+        </div>
+        <input type="range" class="slider" id="throttleSlider" min="0" max="100" value="20">
+      </div>
+      <button class="btn-mining btn-start" id="startBtn" onclick="startMiningUI()">Start Mining</button>
+      <button class="btn-mining btn-stop" id="stopBtn" onclick="stopMiningUI()">Stop Mining</button>
+    </div>
+
+    <div class="glass section">
+      <div class="section-title">Statistics</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="hashesPerSec">0</div>
+          <div class="stat-label">Hashes/sec</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalHashes">0</div>
+          <div class="stat-label">Total Hashes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value small" id="validShares">0</div>
+          <div class="stat-label">Valid Shares</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value small" id="totalShares">0</div>
+          <div class="stat-label">Total Shares</div>
+        </div>
+        <div class="stat-card full-width">
+          <div class="stat-value small" id="algorithm">-</div>
+          <div class="stat-label">Algorithm</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    const throttleSlider = document.getElementById('throttleSlider');
+    const throttleValue = document.getElementById('throttleValue');
+    throttleSlider.addEventListener('input', () => {
+      throttleValue.textContent = throttleSlider.value + '%';
+    });
+
+    let validShares = 0;
+    let totalShares = 0;
+    let lastHashCount = 0;
+    let lastTime = 0;
+    let isMining = false;
+
+    const origOnServerMsg = on_servermsg;
+    on_servermsg = function(c) {
+      c = JSON.parse(c.data);
+      if (c.identifier === 'job' && c.algo) {
+        document.getElementById('algorithm').textContent = c.algo;
+      }
+      if (c.identifier === 'solved') {
+        validShares++;
+      }
+      totalShares++;
+      origOn_servermsg({data: JSON.stringify(c)});
+      updateStats();
+    }
+
+    const origOnWorkermsg = on_workermsg;
+    on_workermsg = function(c) {
+      origOnWorkermsg(c);
+      updateStats();
+    }
+
+    function updateStats() {
+      const now = performance.now();
+      if (lastTime === 0) {
+        lastTime = now;
+        lastHashCount = totalhashes;
+        return;
+      }
+      const elapsed = (now - lastTime) / 1000;
+      if (elapsed >= 1) {
+        const hashDiff = totalhashes - lastHashCount;
+        const hps = Math.round(hashDiff / elapsed);
+        document.getElementById('hashesPerSec').textContent = formatNumber(hps);
+        lastHashCount = totalhashes;
+        lastTime = now;
+      }
+      document.getElementById('totalHashes').textContent = formatNumber(totalhashes);
+      document.getElementById('validShares').textContent = validShares;
+      document.getElementById('totalShares').textContent = totalShares;
+    }
+
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
+
+    setInterval(updateStats, 1000);
+
+    let connectionCheckInterval;
+    function startConnectionCheck() {
+      clearInterval(connectionCheckInterval);
+      connectionCheckInterval = setInterval(() => {
+        const dot = document.getElementById('statusDot');
+        const text = document.getElementById('statusText');
+        if (connected === 1 && isMining) {
+          dot.className = 'status-dot mining';
+          text.textContent = 'Mining active';
+        } else if (connected === 1) {
+          dot.className = 'status-dot connected';
+          text.textContent = 'Connected';
+        } else {
+          dot.className = 'status-dot';
+          text.textContent = 'Disconnected';
+        }
+      }, 1000);
+    }
+
+    function startMiningUI() {
+      const pool = document.getElementById('poolInput').value.trim();
+      const wallet = document.getElementById('walletInput').value.trim();
+      const worker = document.getElementById('workerInput').value.trim();
+      const threads = parseInt(document.getElementById('threadsInput').value);
+      const throttle = parseInt(throttleSlider.value);
+
+      if (!pool || !wallet) {
+        alert('Please enter pool and wallet address');
+        return;
+      }
+
+      const poolParts = pool.split(':');
+      if (poolParts.length >= 2) {
+        server = 'wss://' + pool;
+      } else {
+        server = 'wss://' + pool + ':443';
+      }
+
+      walletAddress = wallet;
+      workerId = worker || '';
+      throttleMiner = throttle;
+
+      validShares = 0;
+      totalShares = 0;
+      lastTime = 0;
+      isMining = true;
+
+      document.getElementById('walletDisplay').textContent = wallet.substring(0, 12) + '...' + wallet.substring(wallet.length - 8);
+
+      startMining(pool, walletAddress, workerId, threads, '');
+      startConnectionCheck();
+
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('stopBtn').style.display = 'block';
+    }
+
+    function stopMiningUI() {
+      stopMining();
+      isMining = false;
+      document.getElementById('startBtn').style.display = 'block';
+      document.getElementById('stopBtn').style.display = 'none';
+      document.getElementById('statusDot').className = 'status-dot';
+      document.getElementById('statusText').textContent = 'Stopped';
+    }
+  </script>
+</body>
+</html>
